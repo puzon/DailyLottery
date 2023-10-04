@@ -1,20 +1,22 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import ParticipantsList from "@/components/ParticipantsList.vue";
+import {useLotteryStore} from '@/stores/lottery'
+
+const lotteryStore = useLotteryStore();
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <v-layout class="rounded rounded-md">
+    <v-app-bar title="Application bar"></v-app-bar>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
+    <v-navigation-drawer>
+      <participants-list/>
+    </v-navigation-drawer>
 
-  <main>
-    <TheWelcome />
-  </main>
+    <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+      {{ lotteryStore.allParticipants }}
+    </v-main>
+  </v-layout>
 </template>
 
 <style scoped>
