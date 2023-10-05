@@ -1,8 +1,7 @@
 import {createPinia, setActivePinia} from "pinia";
 import {useLotteryStore} from "@/stores/lottery";
 import {beforeEach, describe, expect, it, vi} from 'vitest'
-import {nextTick} from "vue";
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+import {getRandomGenerator} from "@/services/RandomGeneratorFactory";
 
 describe('Lottery store', () => {
     describe('Standard operations', () => {
@@ -60,6 +59,46 @@ describe('Lottery store', () => {
             expect(lottery.isLuckyOne(participantB.id)).toBeTruthy();
         });
     });
+
+    describe('Randomizing', () => {
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            setActivePinia(createPinia());
+        });
+
+        it('should return randomized participants to choose', () => {
+            vi.mock('@/services/RandomGeneratorFactory', () => {
+                return {
+                    getRandomGenerator: vi.fn(),
+                }
+            });
+            const mockRandomGenerator ={
+                getRandomNumber: vi.fn(),
+                shuffleArray: vi.fn(),
+            };
+            vi.mocked(getRandomGenerator).mockReturnValue(mockRandomGenerator);
+            vi.mocked(mockRandomGenerator.shuffleArray).mockReturnValue(['mockedReturn']);
+
+            let lottery = useLotteryStore();
+            lottery.ticketsForParticipant = 2;
+
+            const participantA = lottery.addParticipant('a');
+            const participantB = lottery.addParticipant('b');
+            const participants = [
+                participantA,
+                participantA,
+                participantB,
+                participantB,
+            ];
+
+            const participantsToChoose = lottery.getRandomizedParticipantsToChoose();
+
+            expect(getRandomGenerator().shuffleArray).toHaveBeenCalledOnce();
+            expect(getRandomGenerator().shuffleArray).toBeCalledWith(participants);
+            expect(participantsToChoose).toEqual(['mockedReturn']);
+        });
+    });
+
     describe('Store data types', () => {
         beforeEach(() => {
             vi.restoreAllMocks();
