@@ -14,13 +14,14 @@ import {createVuetify} from 'vuetify'
 import {aliases, mdi} from 'vuetify/iconsets/mdi'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import {Wheel} from "vue3-fortune-wheel";
 
 
 const app = createApp(App)
 
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
-app.use(pinia)
+app.use(pinia);
 app.use(createVuetify({
     components,
     directives,
@@ -31,6 +32,7 @@ app.use(createVuetify({
             mdi,
         },
     },
-}))
+}));
+app.component('VWheel', Wheel);
 
 app.mount('#app')

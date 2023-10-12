@@ -58,6 +58,27 @@ describe('Lottery store', () => {
 
             expect(lottery.isLuckyOne(participantB.id)).toBeTruthy();
         });
+
+        it('removes participant from lucky ones', () => {
+            const lottery = useLotteryStore();
+            lottery.addParticipant('a');
+            const participantB = lottery.addParticipant('b');
+            lottery.addLuckyOne(participantB.id);
+            expect(lottery.isLuckyOne(participantB.id)).toBeTruthy();
+
+            lottery.removeFromLuckyOnes(participantB.id);
+            expect(lottery.isLuckyOne(participantB.id)).toBeFalsy();
+        });
+
+        it('should tell if there\'s not enough participants to choose', () => {
+            const lottery = useLotteryStore();
+            const participantA = lottery.addParticipant('a');
+            lottery.addParticipant('b');
+
+            expect(lottery.canChooseLuckyOne).toBeTruthy();
+            lottery.addLuckyOne(participantA.id);
+            expect(lottery.canChooseLuckyOne).toBeFalsy();
+        });
     });
 
     describe('Randomizing', () => {
@@ -66,13 +87,13 @@ describe('Lottery store', () => {
             setActivePinia(createPinia());
         });
 
-        it('should return randomized participants to choose', () => {
+        it('should return randomized participants to choose', async () => {
             vi.mock('@/services/RandomGeneratorFactory', () => {
                 return {
                     getRandomGenerator: vi.fn(),
                 }
             });
-            const mockRandomGenerator ={
+            const mockRandomGenerator = {
                 getRandomNumber: vi.fn(),
                 shuffleArray: vi.fn(),
             };
@@ -80,22 +101,113 @@ describe('Lottery store', () => {
             vi.mocked(mockRandomGenerator.shuffleArray).mockReturnValue(['mockedReturn']);
 
             let lottery = useLotteryStore();
-            lottery.ticketsForParticipant = 2;
 
-            const participantA = lottery.addParticipant('a');
-            const participantB = lottery.addParticipant('b');
             const participants = [
-                participantA,
-                participantA,
-                participantB,
-                participantB,
-            ];
+                lottery.addParticipant('a'),
+                lottery.addParticipant('b'),
+                lottery.addParticipant('c'),
+                lottery.addParticipant('d'),
+            ]
 
-            const participantsToChoose = lottery.getRandomizedParticipantsToChoose();
+
+            const participantsToChoose = await lottery.getRandomizedParticipantsToChoose();
 
             expect(getRandomGenerator().shuffleArray).toHaveBeenCalledOnce();
             expect(getRandomGenerator().shuffleArray).toBeCalledWith(participants);
             expect(participantsToChoose).toEqual(['mockedReturn']);
+        });
+
+
+        it('should randomize participants to choose in list', async () => {
+            vi.mock('@/services/RandomGeneratorFactory', () => {
+                return {
+                    getRandomGenerator: vi.fn(),
+                }
+            });
+            const mockRandomGenerator = {
+                getRandomNumber: vi.fn(),
+                shuffleArray: vi.fn(),
+            };
+            vi.mocked(getRandomGenerator).mockReturnValue(mockRandomGenerator);
+
+            let lottery = useLotteryStore();
+
+            const participants = [
+                lottery.addParticipant('a'),
+                lottery.addParticipant('b'),
+                lottery.addParticipant('c'),
+                lottery.addParticipant('d'),
+            ];
+            vi.mocked(mockRandomGenerator.shuffleArray).mockReturnValue([
+                participants[3],
+                participants[1],
+                participants[2],
+                participants[0],
+            ]);
+            lottery.addLuckyOne(participants[1].id);
+            lottery.addLuckyOne(participants[2].id);
+
+
+            await lottery.randomizeParticipants();
+
+            expect(getRandomGenerator().shuffleArray).toHaveBeenCalledOnce();
+            expect(getRandomGenerator().shuffleArray).toBeCalledWith(participants,);
+            expect(lottery.participantsToChoose).toEqual([
+                participants[3],
+                participants[0],
+            ]);
+        });
+
+        it('should chooses lucky one', async () => {
+            vi.mock('@/services/RandomGeneratorFactory', () => {
+                return {
+                    getRandomGenerator: vi.fn(),
+                }
+            });
+            const mockRandomGenerator = {
+                getRandomNumber: vi.fn(),
+                shuffleArray: vi.fn(),
+            };
+            vi.mocked(getRandomGenerator).mockReturnValue(mockRandomGenerator);
+            vi.mocked(mockRandomGenerator.getRandomNumber).mockReturnValue(1);
+
+            let lottery = useLotteryStore();
+
+            lottery.addParticipant('a');
+            const participantB = lottery.addParticipant('b');
+
+            const chosenLuckyOneId = await lottery.chooseLuckyOne();
+
+            expect(getRandomGenerator().getRandomNumber).toHaveBeenCalledOnce();
+            expect(getRandomGenerator().getRandomNumber).toBeCalledWith(0, 1);
+            expect(chosenLuckyOneId).toEqual(participantB.id);
+        });
+
+        it('start over new lottery with existing participants', async () => {
+            vi.mock('@/services/RandomGeneratorFactory', () => {
+                return {
+                    getRandomGenerator: vi.fn(),
+                }
+            });
+            const mockRandomGenerator = {
+                getRandomNumber: vi.fn(),
+                shuffleArray: vi.fn(),
+            };
+            vi.mocked(getRandomGenerator).mockReturnValue(mockRandomGenerator);
+
+
+            const lottery = useLotteryStore();
+            const participantA = lottery.addParticipant('a');
+            const participantB = lottery.addParticipant('b');
+            vi.mocked(mockRandomGenerator.shuffleArray).mockReturnValue([participantB, participantA]);
+
+            lottery.addLuckyOne(participantA.id);
+            expect(lottery.isLuckyOne(participantA.id)).toBeTruthy();
+            expect(lottery.participantsToChoose).toHaveLength(1);
+
+            await lottery.startNewLottery();
+            expect(lottery.participantsToChoose).toHaveLength(2);
+            expect(lottery.participantsToChoose[0].id).toEqual(participantB.id);
         });
     });
 

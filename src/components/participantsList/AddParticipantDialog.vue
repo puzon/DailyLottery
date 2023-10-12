@@ -32,7 +32,9 @@ const submit = async (event) => {
       width="1024"
   >
     <template v-slot:activator="{ props }">
-      <v-btn icon="mdi-plus" size="large" elevation="8" color="primary" v-bind="props"></v-btn>
+      <slot name="activator" :props="props">
+        <v-btn icon="mdi-plus" size="large" elevation="8" color="primary" v-bind="props"></v-btn>
+      </slot>
     </template>
     <v-card>
       <v-card-title>

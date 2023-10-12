@@ -1,49 +1,47 @@
 <script setup>
 import ParticipantsList from "@/components/ParticipantsList.vue";
 import {useLotteryStore} from '@/stores/lottery'
+import {ref} from "vue";
+import CurrentLottery from "@/components/CurrentLottery.vue";
 
 const lotteryStore = useLotteryStore();
+const randomizingInProgress = ref(false);
+
+const randomizeParticipants = async () => {
+  randomizingInProgress.value = true;
+  lotteryStore.randomizeParticipants()
+      .then(() => {
+        setTimeout(() => {
+          randomizingInProgress.value = false
+        }, 200);
+      });
+}
 </script>
 
 <template>
   <v-layout class="rounded rounded-md">
-    <v-app-bar title="Application bar"></v-app-bar>
+    <v-app-bar
+        title="Daily Lottery"
+        theme="dark"
+        density="compact"
+    >
+      <template v-slot:append>
+        <v-btn icon="mdi-dice-multiple" :loading="randomizingInProgress" @click="randomizeParticipants()"></v-btn>
 
-    <v-navigation-drawer>
-      <participants-list/>
-    </v-navigation-drawer>
+        <participants-list/>
+      </template>
+    </v-app-bar>
 
-    <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
-      {{ lotteryStore.allParticipants }}
+    <v-main class="d-flex align-center justify-center">
+      <CurrentLottery v-if="lotteryStore.hasEnoughParticipants">
+      </CurrentLottery>
+      <div v-else class="text-h4">
+        Add more participants.
+      </div>
     </v-main>
   </v-layout>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-}
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
 </style>
