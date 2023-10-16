@@ -2,14 +2,18 @@
 import {useLotteryStore} from '@/stores/lottery'
 import ParticipantCard from "@/components/currentLottery/ParticipantCard.vue";
 import {ref} from "vue";
+import LuckyOneCard from "@/components/currentLottery/LuckyOneCard.vue";
 
 const lotteryStore = useLotteryStore();
 const choosingLuckyOne = ref(false);
 const startingOver = ref(false);
+const luckyOneCard = ref(null);
+
 const startLottery = async () => {
   choosingLuckyOne.value = true;
   lotteryStore.chooseLuckyOne()
       .then((luckyOneId) => {
+        luckyOneCard.value.showLuckyOne(lotteryStore.getParticipantById(luckyOneId).name);
       })
       .catch((e) => {
         console.log(e);
@@ -76,6 +80,8 @@ const startOver = async () => {
         </v-col>
       </TransitionGroup>
     </v-row>
+
+    <LuckyOneCard ref="luckyOneCard" />
   </div>
 </template>
 
