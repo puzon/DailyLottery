@@ -7,6 +7,7 @@ import LuckyOneCard from "@/components/currentLottery/LuckyOneCard.vue";
 const lotteryStore = useLotteryStore();
 const choosingLuckyOne = ref(false);
 const startingOver = ref(false);
+const dimCards = ref(false);
 const luckyOneCard = ref(null);
 
 const startLottery = async () => {
@@ -15,6 +16,7 @@ const startLottery = async () => {
   setTimeout(() => {
     lotteryStore.chooseLuckyOne()
         .then((luckyOneId) => {
+          dimCards.value = true;
           luckyOneCard.value.showLuckyOne(lotteryStore.getParticipantById(luckyOneId).name);
         })
         .catch((e) => {
@@ -78,12 +80,16 @@ const startOver = async () => {
               :name="participant.name"
               :isLuckyOne="participant.isLuckyOne"
               :wonDate="participant.wonDate"
+              :dimCards="dimCards"
           />
         </v-col>
       </TransitionGroup>
     </v-row>
 
-    <LuckyOneCard ref="luckyOneCard" />
+    <LuckyOneCard
+        ref="luckyOneCard"
+        @closed="dimCards = false"
+    />
   </div>
 </template>
 

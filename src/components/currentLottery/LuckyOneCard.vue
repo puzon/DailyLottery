@@ -12,6 +12,13 @@ const showLuckyOne = (name) => {
 defineExpose({
   showLuckyOne,
 });
+const emit = defineEmits(['closed']);
+
+const onShowCardChanged = (newValue) => {
+  if (!newValue) {
+    emit('closed');
+  }
+};
 </script>
 
 <template>
@@ -19,6 +26,7 @@ defineExpose({
       v-model="showCard"
       width="auto"
       transition="fab-transition"
+      @update:modelValue="onShowCardChanged"
   >
     <template v-slot:default>
       <div class="cardContainer d-flex flex-column align-center">

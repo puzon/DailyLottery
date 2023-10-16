@@ -6,6 +6,10 @@ const props = defineProps({
   name: String,
   wonDate: Number,
   isLuckyOne: Boolean,
+  dimCards: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const isLuckyOne = computed(() => {
@@ -17,17 +21,20 @@ const variant = computed(() => {
 const wonDate = computed(() => {
   return useDateFormat(props.wonDate, 'DD-MM-YYYY').value;
 });
-
+const cardColor = computed(() => {
+  return props.dimCards ? '#646464' : 'success';
+});
 
 </script>
 
 <template>
   <v-card
       class="mx-auto"
+      :class="{dimmed: dimCards}"
       max-width="344"
       min-width="200"
       min-height="150"
-      color="success"
+      :color="cardColor"
       :variant="variant"
   >
     <v-card-item>
@@ -48,5 +55,7 @@ const wonDate = computed(() => {
 </template>
 
 <style scoped>
-
+.dimmed {
+  opacity: .5;
+}
 </style>
