@@ -11,17 +11,19 @@ const luckyOneCard = ref(null);
 
 const startLottery = async () => {
   choosingLuckyOne.value = true;
-  lotteryStore.chooseLuckyOne()
-      .then((luckyOneId) => {
-        luckyOneCard.value.showLuckyOne(lotteryStore.getParticipantById(luckyOneId).name);
-      })
-      .catch((e) => {
-        console.log(e);
-        alert('Something is no yes');
-      })
-      .finally(() => {
-        choosingLuckyOne.value = false;
-      });
+  await lotteryStore.randomizeParticipants();
+  setTimeout(() => {
+    lotteryStore.chooseLuckyOne()
+        .then((luckyOneId) => {
+          luckyOneCard.value.showLuckyOne(lotteryStore.getParticipantById(luckyOneId).name);
+        })
+        .catch((e) => {
+          console.error(e);
+        })
+        .finally(() => {
+          choosingLuckyOne.value = false;
+        });
+  }, 1500);
 }
 
 const startOver = async () => {
