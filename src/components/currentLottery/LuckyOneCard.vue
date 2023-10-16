@@ -23,7 +23,6 @@ defineExpose({
     <template v-slot:default>
       <div class="cardContainer d-flex flex-column align-center">
         <v-icon
-            v-if="showCard"
             class="crown"
             icon="mdi-crown"/>
         <v-card
