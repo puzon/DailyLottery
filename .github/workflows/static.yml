@@ -21,6 +21,10 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 
+
+env:
+  VITE_BASE: '/DailyLottery/'
+
 jobs:
   # Single deploy job since we're just deploying
   deploy:
@@ -39,8 +43,6 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build
-        env:
-          VITE_BASE: '/DailyLottery/',
         run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v3
